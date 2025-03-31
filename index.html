@@ -1,0 +1,375 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Upload PDF File</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500&display=swap" rel="stylesheet" />
+  <style>
+    body {
+      font-family: 'Roboto', sans-serif;
+      background: linear-gradient(135deg, #74ABE2, #5563DE);
+      margin: 0;
+      padding: 0;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
+      color: #333;
+    }
+    .upload-container {
+      background: rgba(255, 255, 255, 0.6);
+      backdrop-filter: blur(10px);
+      border-radius: 20px;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+      padding: 30px 40px;
+      width: 90%;
+      max-width: 500px;
+    }
+    .upload-container h2 {
+      text-align: center;
+      color: #5563DE;
+      margin-top: 0;
+      font-weight: 500;
+    }
+    .upload-container p.subtitle {
+      text-align: center;
+      font-size: 14px;
+      color: #333;
+      margin: 5px 0 15px;
+    }
+    select, .button {
+      width: 100%;
+      padding: 12px 15px;
+      margin: 10px 0;
+      border: 1px solid #ccc;
+      border-radius: 8px;
+      font-size: 14px;
+      outline: none;
+    }
+    select:focus, .button:focus {
+      border-color: #5563DE;
+    }
+    .subject-select {
+      display: none;
+    }
+    .save-btn {
+      cursor: pointer;
+      border: none;
+      background: linear-gradient(135deg, #2d5ae8, #48c6ef);
+      color: #fff;
+      font-weight: 500;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+    }
+    .save-btn:hover {
+      background: linear-gradient(135deg, #244ac2, #399ac7);
+      transform: translateY(-2px);
+    }
+    .cancel-btn {
+      cursor: pointer;
+      border: none;
+      background: linear-gradient(135deg, #dc3545, #c82333);
+      color: #fff;
+      font-weight: 500;
+      border-radius: 8px;
+      padding: 12px 15px;
+    }
+    .cancel-btn:hover {
+      transform: translateY(-2px);
+    }
+    .drop-zone {
+      border: 2px dashed #ccc;
+      border-radius: 8px;
+      padding: 25px;
+      margin: 15px 0;
+      text-align: center;
+      background: #f9f9f9;
+      cursor: pointer;
+      position: relative;
+    }
+    .drop-zone.highlight {
+      background: #e8f0fe;
+      border-color: #5563DE;
+    }
+    .file-list {
+      list-style: none;
+      padding: 0;
+      margin: 10px 0 0;
+      max-height: 180px;
+      overflow-y: auto;
+      border-top: 1px solid #eee;
+    }
+    .file-list li {
+      padding: 8px;
+      border-bottom: 1px solid #eee;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 13px;
+    }
+    .view-btn, .delete-btn {
+      padding: 5px 10px;
+      font-size: 12px;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+    }
+    .view-btn {
+      background: #28a745;
+      color: #fff;
+    }
+    .delete-btn {
+      background: #dc3545;
+      color: #fff;
+    }
+    .error-message {
+      text-align: center;
+      color: #dc3545;
+      font-size: 13px;
+      margin-top: 5px;
+    }
+    #progressIndicator {
+      display: none;
+      margin: 15px auto;
+      width: 40px;
+      height: 40px;
+      border: 4px solid rgba(70,130,180,0.2);
+      border-top-color: rgb(70,130,180);
+      border-radius: 50%;
+      animation: spin 1s linear infinite;
+    }
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+  </style>
+</head>
+<body>
+  <div class="upload-container">
+    <h2>Upload PDF File</h2>
+    <p class="subtitle">*** Please select year and subject before uploading your PDF files. ***</p>
+    <select id="yearSelect" class="year-select">
+      <option value="">-- Select year --</option>
+      <option value="1">Year 1</option>
+      <option value="2">Year 2</option>
+      <option value="3">Year 3</option>
+      <option value="4">Year 4</option>
+    </select>
+    <select id="subjectSelect1" class="subject-select">
+      <option value="" disabled selected>-- Select subject --</option>
+      <option value="Calculas1">Calculas 1</option>
+      <option value="Calculas2">Calculas 2</option>
+      <option value="Computer Programming">Computer programming</option>
+      <option value="Drawing">Drawing</option>
+      <option value="Engineering Materials">Engineering materials</option>
+      <option value="Engineering Mechanics">Engineering mechanics</option>
+      <option value="General Chemistry">General chemistry</option>
+      <option value="General Chemistry Laboratory">General chemistry laboratory</option>
+      <option value="General Physics1">General physics1</option>
+      <option value="General Physics2">General physics2</option>
+      <option value="General Physics Laboratory 1">General physics laboratory 1</option>
+      <option value="General Physics Laboratory 2">General Physics laboratory 2</option>
+    </select>
+    <select id="subjectSelect2" class="subject-select">
+      <option value="" disabled selected>-- Select subject --</option>
+      <option value="Computer aided design for manufacturing">Computer aided design for manufacturing</option>
+      <option value="Computer and information technology for industrial engineering">Computer and information technology for industrial engineering</option>
+      <option value="Electrical engineering">Electrical engineering</option>
+      <option value="ENGINEERING METALLURGY">Engineering metallurgy</option>
+      <option value="English for academic purposes">English for academic purposes</option>
+      <option value="Elementary differential equations and linear algebra">Elementary differential equations and linear algebra</option>
+      <option value="Industrial engineering practice">Industrial engineering practice</option>
+      <option value="Industrial safety engineering">Industrial safety engineering</option>
+      <option value="Manufacturing processes">Manufacturing processes</option>
+      <option value="Numerical method for engineering">Numerical method for engineering</option>
+      <option value="Probability and statistics 1">Probability and statistics 1</option>
+      <option value="Thermodynamics of materials">Thermodynamics of materials</option>
+    </select>
+    <select id="subjectSelect3" class="subject-select">
+      <option value="" disabled selected>-- Select subject --</option>
+      <option value="Automation system">Automation system</option>
+      <option value="COMPUTER AIDED MANUFACTURING & COMPUTER AIDED ENGINEERING">Computer aided manufacturing & computer aided engineering</option>
+      <option value="Engineering economy">Engineering economy</option>
+      <option value="Industrial engineering laboratory">Industrial engineering laboratory</option>
+      <option value="Industrial plant design">Industrial plant design</option>
+      <option value="Industrial simulation">Industrial simulation</option>
+      <option value="Industrial work study">Industrial work study</option>
+      <option value="Maintenance engineering">Maintenance engineering</option>
+      <option value="Mechanical engineering laboratory">Mechanical engineering laboratory</option>
+      <option value="Operations research">Operations research</option>
+      <option value="Pollution control and waste treatment">Pollution control and waste treatment</option>
+      <option value="Production planning and control">Production planning and control</option>
+      <option value="Probability and statistics 2">Probability and statistics 2</option>
+      <option value="Quality control">Quality control</option>
+    </select>
+    <select id="subjectSelect4" class="subject-select">
+      <option value="" disabled selected>-- Select subject --</option>
+      <option value="Capstone design project">Capstone design project</option>
+      <option value="Elective in industrial engineering">Elective in industrial engineering</option>
+      <option value="Industrial cost analysis and budgeting">Industrial cost analysis and budgeting</option>
+      <option value="Industrial seminar">Industrial seminar</option>
+      <option value="Machine tools and computer numerical control">Machine tools and computer numerical control</option>
+      <option value="Project 1">Project 1</option>
+      <option value="Quality management">Quality management</option>
+      <option value="TOOLS ENGINEERING & PRESS DIE DESIGN">Tools engineering & press die design</option>
+    </select>
+    <input type="file" id="fileInput" accept="application/pdf" multiple hidden />
+    <div class="drop-zone" id="dropZone">
+      <i class="fa-solid fa-cloud-arrow-up icon"></i>
+      <p id="dropText">Drag & drop files here or click to select</p>
+      <ul id="fileList" class="file-list"></ul>
+    </div>
+    <div id="progressIndicator"></div>
+    <button class="button save-btn" onclick="saveFile()">Save Changes</button>
+    <button class="button cancel-btn" onclick="cancelUpload()">Cancel</button>
+    <div id="feedback" class="error-message"></div>
+  </div>
+
+  <script>
+    let uploadedFiles = [];
+    const dropZone = document.getElementById("dropZone");
+    const fileInput = document.getElementById("fileInput");
+    const fileList = document.getElementById("fileList");
+    const dropText = document.getElementById("dropText");
+    const yearSelect = document.getElementById("yearSelect");
+    const subjectSelect1 = document.getElementById("subjectSelect1");
+    const subjectSelect2 = document.getElementById("subjectSelect2");
+    const subjectSelect3 = document.getElementById("subjectSelect3");
+    const subjectSelect4 = document.getElementById("subjectSelect4");
+    const feedback = document.getElementById("feedback");
+    const progressIndicator = document.getElementById("progressIndicator");
+
+    function showFeedback(message) {
+      feedback.textContent = message;
+      setTimeout(() => { feedback.textContent = ""; }, 4000);
+    }
+
+    function showProgress(show) {
+      progressIndicator.style.display = show ? "block" : "none";
+    }
+
+    yearSelect.addEventListener("change", () => {
+      const subjectSelects = [subjectSelect1, subjectSelect2, subjectSelect3, subjectSelect4];
+      subjectSelects.forEach(select => select.style.display = "none");
+      if (yearSelect.value === "1") {
+        subjectSelect1.style.display = "block";
+      } else if (yearSelect.value === "2") {
+        subjectSelect2.style.display = "block";
+      } else if (yearSelect.value === "3") {
+        subjectSelect3.style.display = "block";
+      } else if (yearSelect.value === "4") {
+        subjectSelect4.style.display = "block";
+      }
+    });
+
+    dropZone.addEventListener("click", () => fileInput.click());
+    dropZone.addEventListener("dragover", (e) => {
+      e.preventDefault();
+      dropZone.classList.add("highlight");
+    });
+    dropZone.addEventListener("dragleave", () => dropZone.classList.remove("highlight"));
+    dropZone.addEventListener("drop", (e) => {
+      e.preventDefault();
+      dropZone.classList.remove("highlight");
+      handleFiles(e.dataTransfer.files);
+    });
+    fileInput.addEventListener("change", () => handleFiles(fileInput.files));
+
+    function handleFiles(files) {
+      showProgress(true);
+      try {
+        Array.from(files).forEach((file) => {
+          if (file.type !== "application/pdf") {
+            showFeedback("File " + file.name + " is not a valid PDF.");
+            return;
+          }
+          const fileURL = URL.createObjectURL(file);
+          uploadedFiles.push({
+            name: file.name,
+            size: (file.size / 1024).toFixed(2) + " KB",
+            date: new Date().toLocaleString(),
+            url: fileURL
+          });
+        });
+        updateFileList();
+      } catch (error) {
+        showFeedback("Error processing files: " + error.message);
+      } finally {
+        showProgress(false);
+      }
+    }
+
+    function updateFileList() {
+      fileList.innerHTML = "";
+      uploadedFiles.forEach((file, index) => {
+        const listItem = document.createElement("li");
+        listItem.innerHTML = `${index + 1}. ${file.name} 
+          <button class="view-btn" onclick="viewFile('${file.url}')"><i class="fa-solid fa-eye"></i> View</button> 
+          <button class="delete-btn" onclick="event.stopPropagation(); deleteFile(${index})"><i class="fa-solid fa-trash"></i> Delete</button>`;
+        fileList.appendChild(listItem);
+      });
+      dropText.style.display = uploadedFiles.length ? "none" : "block";
+    }
+
+    function viewFile(url) {
+      window.open(url, "_blank");
+    }
+
+    function deleteFile(index) {
+      try {
+        URL.revokeObjectURL(uploadedFiles[index].url);
+        uploadedFiles.splice(index, 1);
+        updateFileList();
+      } catch (error) {
+        showFeedback("Error deleting file: " + error.message);
+      }
+    }
+
+    function saveFile() {
+      const selectedYear = yearSelect.value;
+      let selectedSubject = "";
+      if (selectedYear === "1") {
+        selectedSubject = subjectSelect1.value;
+      } else if (selectedYear === "2") {
+        selectedSubject = subjectSelect2.value;
+      } else if (selectedYear === "3") {
+        selectedSubject = subjectSelect3.value;
+      } else if (selectedYear === "4") {
+        selectedSubject = subjectSelect4.value;
+      }
+      if (!selectedYear || !selectedSubject) {
+        showFeedback("Please select year and subject before uploading your PDF files.");
+        return;
+      }
+      if (uploadedFiles.length > 0) {
+        try {
+          sessionStorage.setItem("uploadedFiles", JSON.stringify(uploadedFiles));
+          sessionStorage.setItem("selectedYear", selectedYear);
+          sessionStorage.setItem("selectedSubject", selectedSubject);
+          window.location.href = "file_details.html";
+        } catch (error) {
+          showFeedback("Error saving files: " + error.message);
+        }
+      } else {
+        showFeedback("No file selected.");
+      }
+    }
+
+    function cancelUpload() {
+      try {
+        uploadedFiles.forEach(file => URL.revokeObjectURL(file.url));
+        uploadedFiles = [];
+        fileList.innerHTML = "";
+        dropText.style.display = "block";
+      } catch (error) {
+        showFeedback("Error canceling upload: " + error.message);
+      }
+    }
+  </script>
+</body>
+</html>

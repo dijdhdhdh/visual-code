@@ -1,0 +1,268 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Uploaded Files</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      text-align: center;
+      padding: 20px;
+      background: linear-gradient(135deg, #a2c2e1, #74ABE2); /* Lighter Blue Gradient */
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 20px;
+      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    }
+    th, td {
+      border: 3px solid black; /* Thicker black border */
+      padding: 12px;
+      transition: background-color 0.3s ease;
+    }
+    th {
+      background-color: #007bff;
+      color: white;
+      cursor: pointer;
+    }
+    td {
+      background-color: #f8f9fa;
+    }
+    /* Hover effect for rows */
+    tr:hover {
+      background: linear-gradient(135deg, #e0f7fa, #74ABE2); /* Gradient on hover */
+    }
+    .delete-btn {
+      padding: 5px 12px;
+      font-size: 14px;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+      transition: background-color 0.3s, transform 0.2s ease-in-out; /* Smooth transition */
+      background: linear-gradient(135deg, #ff4d4d, #ff1a1a); /* Bright Red Gradient for Delete */
+    }
+    .delete-btn:hover {
+      background: linear-gradient(135deg, #e60000, #ff0000); /* Darker Red when hovering */
+      transform: scale(1.1); /* Slightly bigger effect */
+    }
+    .button-group {
+      display: flex;
+      gap: 10px;
+      justify-content: center;
+    }
+    .success-message {
+      color: #28a745;
+      font-size: 16px;
+      margin-top: 20px;
+    }
+    .error-message {
+      color: #dc3545;
+      font-size: 16px;
+      margin-top: 20px;
+    }
+    /* Loading Spinner */
+    #loadingSpinner {
+      display: none;
+      border: 4px solid #f3f3f3;
+      border-top: 4px solid #007bff;
+      border-radius: 50%;
+      width: 40px;
+      height: 40px;
+      animation: spin 2s linear infinite;
+      margin: 20px auto;
+    }
+    @keyframes spin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+    /* Back Button */
+    .back-btn {
+      background: linear-gradient(135deg, #007bff, #399ac7);
+      color: white;
+      padding: 10px 20px;
+      border: none;
+      border-radius: 5px;
+      font-size: 16px;
+      cursor: pointer;
+      margin-bottom: 20px;
+      transition: background-color 0.3s;
+    }
+    .back-btn:hover {
+      background: linear-gradient(135deg, #244ac2, #399ac7);
+    }
+    /* Search Box */
+    #searchInput {
+      margin-bottom: 10px;
+      padding: 5px;
+      font-size: 14px;
+      width: 200px;
+      border-radius: 4px;
+      border: 1px solid #007bff;
+      transition: border 0.3s ease;
+    }
+    #searchInput:focus {
+      border-color: #399ac7;
+    }
+  </style>
+</head>
+<body>
+  <!-- Back Button -->
+  <button class="back-btn" onclick="goBack()">Go Back</button>
+
+  <h2>Uploaded Files</h2>
+
+  <!-- Search Box -->
+  <input type="text" id="searchInput" placeholder="Search files" onkeyup="searchFiles()">
+
+  <!-- Success or Error Message -->
+  <div id="message" class="success-message"></div>
+  <div id="error-message" class="error-message"></div>
+
+  <!-- File Table -->
+  <table>
+    <thead>
+      <tr>
+        <th>File Number</th>
+        <th onclick="sortTable(1)">File Name</th>
+        <th onclick="sortTable(2)">Size</th>
+        <th onclick="sortTable(3)">Upload Date</th>
+        <th>Year</th>
+        <th>Subject</th>
+        <th>Actions</th>
+      </tr>
+    </thead>
+    <tbody id="fileDetails"></tbody>
+  </table>
+
+  <!-- Loading Spinner -->
+  <div id="loadingSpinner"></div>
+
+  <script>
+    // เก็บข้อมูลไฟล์ใน sessionStorage
+    let uploadedFiles = JSON.parse(sessionStorage.getItem("uploadedFiles")) || [];
+    const selectedYear = sessionStorage.getItem("selectedYear");
+    const selectedSubject = sessionStorage.getItem("selectedSubject");
+
+    const fileDetails = document.getElementById("fileDetails");
+    const message = document.getElementById("message");
+    const errorMessage = document.getElementById("error-message");
+    const loadingSpinner = document.getElementById("loadingSpinner");
+
+    // Function to display uploaded files
+    function displayFiles() {
+      fileDetails.innerHTML = "";
+      if (uploadedFiles.length === 0) {
+        fileDetails.innerHTML = "<tr><td colspan='7'>No files uploaded yet.</td></tr>";
+        return;
+      }
+
+      uploadedFiles.forEach((file, index) => {
+        const fileSize = file.size || "Size not available"; // Use the size from uploadedFiles
+
+        const row = document.createElement("tr");
+        row.innerHTML = `
+          <td>${index + 1}</td>
+          <td>${file.name}</td>
+          <td>${fileSize}</td> <!-- Show the file size here -->
+          <td>${file.date}</td>
+          <td>${selectedYear || "N/A"}</td>
+          <td>${selectedSubject || "N/A"}</td>
+          <td>
+            <div class="button-group">
+              <button class="delete-btn" onclick="deleteFile(${index})">Delete</button>
+            </div>
+          </td>
+        `;
+        fileDetails.appendChild(row);
+      });
+    }
+
+    // Function to delete a file
+    function deleteFile(index) {
+      const fileToDelete = uploadedFiles[index];
+      const confirmation = confirm(`Are you sure you want to delete ${fileToDelete.name}?`);
+
+      if (confirmation) {
+        uploadedFiles.splice(index, 1);
+        sessionStorage.setItem("uploadedFiles", JSON.stringify(uploadedFiles));
+        displayFiles();
+        showMessage(`${fileToDelete.name} has been deleted.`, 'success');
+      } else {
+        showMessage("File deletion cancelled.", 'error');
+      }
+    }
+
+    // Function to show success or error message
+    function showMessage(text, type) {
+      if (type === 'success') {
+        message.textContent = text;
+        errorMessage.textContent = '';
+      } else {
+        errorMessage.textContent = text;
+        message.textContent = '';
+      }
+    }
+
+    // Function to format file size into KB
+    function formatSize(bytes) {
+      if (bytes === 0) return '0 Bytes';
+      const sizes = ['Bytes', 'KB', 'MB', 'GB', 'TB'];
+      const i = parseInt(Math.floor(Math.log(bytes) / Math.log(1024)));
+      return Math.round(bytes / Math.pow(1024, i), 2) + ' ' + sizes[i];
+    }
+
+    // Function to sort the table by column index
+    function sortTable(n) {
+      let rows, switching, i, x, y, shouldSwitch, dir = "asc", switchcount = 0;
+      switching = true;
+      while (switching) {
+        switching = false;
+        rows = fileDetails.rows;
+        for (i = 0; i < rows.length - 1; i++) {
+          shouldSwitch = false;
+          x = rows[i].getElementsByTagName("td")[n];
+          y = rows[i + 1].getElementsByTagName("td")[n];
+          if (dir === "asc" && x.innerHTML.toLowerCase() > y.innerHTML.toLowerCase() || dir === "desc" && x.innerHTML.toLowerCase() < y.innerHTML.toLowerCase()) {
+            shouldSwitch = true;
+            break;
+          }
+        }
+        if (shouldSwitch) {
+          rows[i].parentNode.insertBefore(rows[i + 1], rows[i]);
+          switching = true;
+          switchcount++;
+        } else {
+          if (switchcount === 0 && dir === "asc") {
+            dir = "desc";
+            switching = true;
+          }
+        }
+      }
+    }
+
+    // Function to search files
+    function searchFiles() {
+      const searchInput = document.getElementById("searchInput").value.toLowerCase();
+      const rows = fileDetails.getElementsByTagName("tr");
+
+      for (let i = 0; i < rows.length; i++) {
+        const td = rows[i].getElementsByTagName("td")[1]; // Search by file name (column 1)
+        if (td) {
+          const textValue = td.textContent || td.innerText;
+          rows[i].style.display = textValue.toLowerCase().indexOf(searchInput) > -1 ? "" : "none";
+        }
+      }
+    }
+
+    // Display the uploaded files on page load
+    displayFiles();
+
+    // Go back to the previous page
+    function goBack() {
+      window.history.back();
+    }
+  </script>
+</body>
+</html>
